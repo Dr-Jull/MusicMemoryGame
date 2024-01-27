@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="output.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #212121;
+    }
+
+    #start-button{
+      -webkit-text-stroke: 3px #468C09;
+    }
+    #start-button:hover {
+      color: #3FFF00;
+      -webkit-text-stroke: 3px #468C09;
+    }
+
+    #three-dots {
+      display: none;
+      -webkit-text-stroke: 3px #468C09;
+
+    }
+
+    .cards-container {
+      position: relative;
+      width: 456px;
+      height: 456px;
+      border-radius: 26px;
+      justify-self: center;
+      align-self: center;
+    }
+
+    #messages {
+      position: absolute;
+      font-size: x-large;
+      color: #00FFBB;
+      font-weight: 900;
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      -webkit-text-stroke: 1px black;
+      ;
+    }
+
+    .card {
+      margin: 25px;
+      border: 1px black solid;
+      border-radius: 20px;
+    }
+
+    #card_1 {
+      background-color: #7FFFD4;
+      margin-bottom: 0px;
+    }
+
+    #card_1:hover {
+      background-color: #00FFBB;
+    }
+
+    #card_1:hover #text-1 {
+      cursor: default;
+      color: #000;
+    }
+
+    #card_2 {
+      background-color: #FC7E75;
+      margin-bottom: 0px;
+
+    }
+
+    #card_2:hover {
+      background-color: #FF4C22;
+    }
+
+    #card_2:hover #text-2 {
+      cursor: default;
+      color: #000;
+    }
+
+    #card_3 {
+      background-color: #FFC260;
+    }
+
+    #card_3:hover {
+      background-color: #FFB700;
+    }
+
+    #card_3:hover #text-3 {
+      cursor: default;
+      color: #000;
+    }
+
+    #card_4 {
+      background-color: #87CEEB;
+    }
+
+    #card_4:hover {
+      background-color: #14E8FF;
+    }
+
+    #card_4:hover #text-4 {
+      cursor: default;
+      color: #000;
+    }
+
+    #reload-button {
+      display: none;
+      width: 150px;
+      height: 40px;
+      font-size: larger;
+    }
+  </style>
+</head>
+
+<body class="h-screen w-full">
+  <div class="game-container flex flex-col flex-wrap gap-4 h-full w-full items-center justify-center">
+    <h1 id="start-button" onclick="addUser()" class="justify-self-start font-bold text-white top-0 text-5xl cursor-pointer ">
+      Start🎧</h1>
+    <h1 id="three-dots" class="justify-self-start font-bold text-white top-0 text-5xl cursor-pointer">...</h1>
+    <div class="cards-container flex flex-wrap justify-self-end flex-row items-center justify-center bg-white rounded">
+      <div id="card_1" class="card w-40 h-40 flex justify-center">
+        <p id="text-1" class="text-white font-bold text-xl self-center">green 0</p>
+      </div>
+      <div id="card_2" class="card w-40 h-40 flex justify-center">
+        <p id="text-2" class="text-white font-bold text-xl self-center">red 1</p>
+      </div>
+      <div id="messages" class="flex self-center justify-self-center absolute ">
+        <p id="win-message"></p>
+        <p id="lose-message"></p>
+      </div>
+      <div id="card_3" class="card w-40 h-40 flex justify-center">
+        <p id="text-3" class="text-white font-bold text-xl self-center">yellow 2</p>
+      </div>
+      <div id="card_4" class="card w-40 h-40 flex justify-center">
+        <p id="text-4" class="text-white font-bold text-xl self-center">blue 3</p>
+      </div>
+    </div>
+    <button id="reload-button" onclick="reloadPage()" class="bg-white flex justify-self-end">Restart</button>
+    <audio id="tap1-sound" src="sounds/green.mp3"></audio>
+    <audio id="tap2-sound" src="sounds/red.mp3"></audio>
+    <audio id="tap3-sound" src="sounds/yellow.mp3"></audio>
+    <audio id="tap4-sound" src="sounds/blue.mp3"></audio>
+    <!-- <audio id="win-sound" src="sounds/red.mp3"></audio> -->
+    <audio id="lose-sound" src="sounds/wrong.mp3"></audio>
+  </div>
+  <script>
+    let tapSequence = [],
+      userTapSequence = [],
+      playerScores = [],
+      userName = '',
+      level = 1,
+      delay = 3000,
+      timer = 1000;
+      let sound1=document.getElementById('tap1-sound'),
+      sound2=document.getElementById('tap2-sound'),
+      sound3=document.getElementById('tap3-sound'),
+      sound4=document.getElementById('tap4-sound'),
+      winSound=document.getElementById('win-sound'),
+      loseSound=document.getElementById('lose-sound');
+
+    function startGame() {
+      hideStartBtn()
+      showThreeDots();
+      generateTapSequence();
+      generateUserTapSequence();
+      console.log(`tap: ${tapSequence} \n user tap: ${userTapSequence}`)
+    }
+    let winMessage = document.getElementById('win-message'),
+      loseMessage = document.getElementById('lose-message'),
+      restartBtn = document.getElementById('reload-button');
+
+    function addUser() {
+      const playerName = prompt("Please enter your name:");
+      if (playerName !== null && playerName !== "") {
+        userName = playerName;
+        startGame()
+      } else {
+        alert("No name entered");
+      }
+    }
+    function hideStartBtn() {
+      startBtn = document.getElementById('start-button');
+      startBtn.style.display = 'none';
+    }
+
+    function showThreeDots() {
+      const threeDots = document.querySelector('#three-dots')
+      threeDots.style.display = 'block';
+    }
+
+    function generateTapSequence() {
+      const randomCard = Math.floor(Math.random() * 4) + 1
+      tapSequence.push(randomCard);
+      updateCardStyles(randomCard);
+      console.log(tapSequence)
+    }
+
+    function updateCardStyles(i) {
+      tappedCard(i)
+      if (i == 1)
+        sound1.play()
+      else if (i == 2)
+        sound2.play()
+      else if (i == 3)
+        sound3.play()
+      else
+        sound4.play()
+    }
+
+    const card1 = document.getElementById('card_1'),
+      card2 = document.getElementById('card_2'),
+      card3 = document.getElementById('card_3'),
+      card4 = document.getElementById('card_4');
+
+    function generateUserTapSequence() {
+      card1.addEventListener('click', () => {
+          sound1.play()
+          tappedCard(1)
+          userTapSequence.push(1)
+          console.log(userTapSequence)
+          compareTaps()
+      });
+
+      card2.addEventListener('click', () => {
+          sound2.play()
+          tappedCard(2)
+          userTapSequence.push(2)
+          console.log(userTapSequence)
+          compareTaps()
+      });
+
+      card3.addEventListener('click', () => {
+          sound3.play()
+          tappedCard(3)
+          userTapSequence.push(3)
+          console.log(userTapSequence)
+          compareTaps()
+      });
+
+      card4.addEventListener('click', () => {
+          sound4.play()
+          userTapSequence.push(4)
+          console.log(userTapSequence)
+          compareTaps()
+      });
+    }
+
+    function compareTaps() {
+      let isEqual = true;
+      for (i = 0; i < userTapSequence.length; i++) {
+        if (userTapSequence[i] !== tapSequence.slice(0, i + 1)[i]) {
+          isEqual = false
+          break;
+        }
+      }
+      if (!isEqual) {
+        console.log("false")
+        nextLevel(false)
+        return false
+      }
+      else {
+        if (userTapSequence.length === tapSequence.length) {
+          if (userTapSequence[tapSequence.length] == tapSequence[tapSequence.length]) {
+            console.log("true")
+            userTapSequence = [];
+            setTimeout(() => {
+              generateTapSequence();
+            }, 1000)
+            nextLevel(true)
+            return true
+          } else {
+            console.log("false")
+            nextLevel(false)
+            return false
+          }
+        }
+      }
+    }
+
+    function tappedCard(i) {
+      const card = document.getElementById(`card_${i}`);
+      let text = document.getElementById(`text-${i}`);
+      const colors = ['#000', '#00FFBB', '#FF4C22', '#FFB700', '#14E8FF'];
+      let originalColor = card.style.backgroundColor;
+      card.style.backgroundColor = colors[i];
+      card.style.border = '2px solid red';
+      card.style.boxShadow = '0 0 10px 3px #e74c3c';
+      text.style.color = colors[0];
+      setTimeout(() => {
+        card.style.boxShadow = '';
+        card.style.backgroundColor = originalColor;
+        text.style.color = '';
+        card.style.border = '';
+      }, 500);
+    }
+
+    function nextLevel(win) {
+      clearTimeout(timer);
+      if (win) {
+        winMessage.textContent = `You Won lvl ${level} 🎊`;
+        setTimeout(function () {
+          winMessage.textContent = ''
+        }, 500);
+        level++;
+      } else {
+        loseSound.play()
+        loseMessage.textContent = `You Lost lvl ${level} 👻`;
+        playerScores.push({userName, level});
+        restartBtn.style.display = 'block';
+      }
+    }
+
+    function reloadPage() {
+      location.reload();
+    }
+  </script>
+</body>
+
+</html>
